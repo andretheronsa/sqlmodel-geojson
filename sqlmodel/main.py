@@ -22,7 +22,7 @@ from typing import (
     Union,
     cast,
 )
-
+from geoalchemy2.types import Geography
 from pydantic import BaseConfig, BaseModel
 from pydantic.errors import ConfigError, DictError
 from pydantic.fields import SHAPE_SINGLETON
@@ -31,6 +31,14 @@ from pydantic.fields import ModelField, Undefined, UndefinedType
 from pydantic.main import ModelMetaclass, validate_model
 from pydantic.typing import ForwardRef, NoArgAnyCallable, resolve_annotations
 from pydantic.utils import ROOT_KEY, Representation
+from pydantic_geojson import (
+    LineStringModel,
+    MultiLineStringModel,
+    MultiPointModel,
+    MultiPolygonModel,
+    PointModel,
+    PolygonModel
+)
 from sqlalchemy import Boolean, Column, Date, DateTime
 from sqlalchemy import Enum as sa_Enum
 from sqlalchemy import Float, ForeignKey, Integer, Interval, Numeric, inspect
@@ -411,6 +419,15 @@ def get_sqlachemy_type(field: ModelField) -> Any:
         return AutoString
     if issubclass(field.type_, uuid.UUID):
         return GUID
+    if issubclass(field.type_, (
+            LineStringModel,
+            MultiLineStringModel,
+            MultiPointModel,
+            MultiPolygonModel,
+            PointModel,
+            PolygonModel)
+    ):
+        return Geography
     raise ValueError(f"The field {field.name} has no matching SQLAlchemy type")
 
 
